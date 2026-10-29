@@ -1,0 +1,9 @@
+# Este repositorio guarda solo la página de Dakota WJP Seguridad;
+# el resto de la carpeta son otros proyectos.
+/*
+!/.gitignore
+!/index.html
+!/FOTOS-IA.md
+!/img/
+/img/relleno-viejo/
+.DS_Store
