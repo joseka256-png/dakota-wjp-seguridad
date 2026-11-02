@@ -897,8 +897,8 @@
     margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--line);
     display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:0.82rem;color:var(--steel);
   }
+  .footer-avales{margin-top:2.75rem;display:flex;flex-wrap:wrap;align-items:stretch;gap:1rem;}
   .footer-aval{
-    margin-top:2.75rem;
     display:flex;align-items:center;gap:1.25rem;
     padding:1.1rem 1.4rem;max-width:560px;
     background:linear-gradient(120deg, rgba(29,44,134,0.35), rgba(15,26,77,0.15));
@@ -909,8 +909,10 @@
   .aval-eyebrow{display:block;font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);}
   .footer-aval strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:1.05rem;margin:0.2rem 0;}
   .aval-sub{font-size:0.85rem;color:var(--text-dim);}
+  .footer-camara{display:flex;align-items:center;padding:0.9rem 1.4rem;background:#fff;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,0.35);}
+  .footer-camara img{display:block;width:260px;max-width:100%;height:auto;}
   @media (max-width:900px){ .footer-grid{grid-template-columns:1fr 1fr;} }
-  @media (max-width:520px){ .footer-grid{grid-template-columns:1fr;} .footer-brand .logo-text{display:inline;} }
+  @media (max-width:520px){ .footer-grid{grid-template-columns:1fr;} .footer-brand .logo-text{display:inline;} .footer-camara{flex:1 1 100%;justify-content:center;} }
 
   /* estado del formulario */
   .form-status{margin-top:0.9rem;font-size:0.9rem;display:none;padding:0.8rem 1rem;border:1px solid;}
@@ -1715,6 +1717,7 @@
         </ul>
       </div>
     </div>
+    <div class="footer-avales">
     <div class="footer-aval">
       <div class="aval-logo"><img src="img/msp.png" alt="Escudo de la Fuerza Pública, Ministerio de Seguridad Pública de Costa Rica" width="64" height="76" loading="lazy"></div>
       <div>
@@ -1722,6 +1725,8 @@
         <strong>Avalados por el Ministerio de Seguridad Pública</strong>
         <span class="aval-sub">República de Costa Rica</span>
       </div>
+    </div>
+    <div class="footer-camara"><img src="img/camara-cartago.png" alt="Cámara de Comercio, Industria, Turismo y Servicios de Cartago" width="640" height="156" loading="lazy"></div>
     </div>
     <div class="footer-bottom">
       <p>&copy; 2026 Dakota WJP Seguridad. Todos los derechos reservados.</p>
