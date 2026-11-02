@@ -669,6 +669,17 @@
   }
   .panic-actions .call-911{background:#D42020;border-color:#D42020;color:#fff;}
   .panic-actions .call-dakota{background:var(--accent);border-color:var(--accent);color:#241A05;}
+  .panic-actions .call-location{gap:0.5rem;background:var(--royal);border-color:#3346B0;color:#fff;}
+  .panic-actions .call-location svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .panic-actions .call-location:disabled{opacity:0.7;cursor:wait;}
+  .panic-actions .call-wa{background:#25D366;border-color:#25D366;color:#06301A;}
+  .panic-actions .call-wa[hidden]{display:none;}
+  .panic-actions .siren-btn{background:#F57C00;border-color:#F57C00;color:#fff;}
+  .panic-actions .siren-btn:hover{background:#FF8F1A;}
+  .panic-status{font-size:0.85rem;color:var(--text-dim);text-align:center;min-height:0;}
+  .panic-status:empty{display:none;}
+  .panic-status.ok{color:var(--secure);}
+  .panic-status.err{color:#FF8A8A;}
   .panic-actions .panic-cancel{background:none;color:var(--text-dim);}
   @media (prefers-reduced-motion: reduce){
     .panic-float.active{animation:none;}
@@ -1723,11 +1734,17 @@
 
 <dialog class="panic-dialog" id="panicDialog" aria-labelledby="panicTitle">
   <h2 id="panicTitle">¿Necesita ayuda urgente?</h2>
-  <p>Este botón no envía una alerta automática. Llame ahora para recibir ayuda.</p>
+  <p>En una emergencia llame primero al 911. También puede enviarnos su ubicación para que nuestro equipo sepa dónde está.</p>
   <div class="panic-actions">
     <a href="tel:911" class="call-911">Llamar al 911</a>
     <a href="tel:+50686999843" class="call-dakota">Llamar a Dakota WJP Seguridad · 8699-9843</a>
-    <button type="button" id="panicSiren">Activar sirena en este dispositivo</button>
+    <button type="button" class="call-location" id="panicLocate">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      Enviar mi ubicación a Dakota
+    </button>
+    <a href="https://wa.me/50686999843" class="call-wa" id="panicWa" target="_blank" rel="noopener" hidden>Enviar ubicación por WhatsApp</a>
+    <div class="panic-status" id="panicStatus" role="status" aria-live="polite"></div>
+    <button type="button" class="siren-btn" id="panicSiren">Activar sirena en este dispositivo</button>
     <button type="button" class="panic-cancel" id="panicCancel">Cancelar</button>
   </div>
 </dialog>
@@ -2014,6 +2031,50 @@
     });
     document.getElementById('panicCancel').addEventListener('click', function(){
       dialog.close();
+    });
+
+    /* Enviar ubicación: correo automático a la empresa + WhatsApp listo para enviar */
+    const locateBtn = document.getElementById('panicLocate');
+    const waLink = document.getElementById('panicWa');
+    const panicStatus = document.getElementById('panicStatus');
+    function setStatus(msg, cls){ panicStatus.textContent = msg; panicStatus.className = 'panic-status' + (cls ? ' ' + cls : ''); }
+    function prepareWhatsApp(text){
+      waLink.href = 'https://wa.me/50686999843?text=' + encodeURIComponent(text);
+      waLink.hidden = false;
+    }
+    function notifyByEmail(fields){
+      const data = new FormData();
+      data.append('_subject', '🚨 ALERTA DE PÁNICO - página web Dakota WJP');
+      data.append('_template', 'table');
+      data.append('_captcha', 'false');
+      Object.keys(fields).forEach(k => data.append(k, fields[k]));
+      return fetch('https://formsubmit.co/ajax/dakotawjp@gmail.com', {method:'POST', headers:{'Accept':'application/json'}, body:data})
+        .then(r => r.ok ? r.json() : Promise.reject());
+    }
+    locateBtn.addEventListener('click', function(){
+      const hora = new Date().toLocaleString('es-CR');
+      if(!navigator.geolocation){
+        setStatus('Este dispositivo no permite compartir la ubicación. Llámenos o escríbanos por WhatsApp.', 'err');
+        prepareWhatsApp('🚨 ALERTA DE PÁNICO desde la página web. Necesito ayuda. (' + hora + ')');
+        return;
+      }
+      locateBtn.disabled = true;
+      setStatus('Obteniendo su ubicación…');
+      navigator.geolocation.getCurrentPosition(function(pos){
+        const lat = pos.coords.latitude.toFixed(6), lng = pos.coords.longitude.toFixed(6);
+        const precision = Math.round(pos.coords.accuracy) + ' m';
+        const mapa = 'https://maps.google.com/?q=' + lat + ',' + lng;
+        prepareWhatsApp('🚨 ALERTA DE PÁNICO desde la página web.\nUbicación: ' + mapa + '\nPrecisión aprox.: ' + precision + '\nHora: ' + hora);
+        setStatus('Ubicación lista. Avisando a Dakota por correo…');
+        notifyByEmail({'Ubicación (Google Maps)': mapa, 'Latitud': lat, 'Longitud': lng, 'Precisión aprox.': precision, 'Hora': hora, 'Dispositivo': navigator.userAgent})
+          .then(() => setStatus('✓ Aviso enviado a Dakota. Toque el botón verde para enviarlo también por WhatsApp.', 'ok'))
+          .catch(() => setStatus('No se pudo enviar el correo. Toque el botón verde para avisar por WhatsApp.', 'err'))
+          .finally(() => { locateBtn.disabled = false; });
+      }, function(){
+        locateBtn.disabled = false;
+        setStatus('No se pudo obtener la ubicación (permiso denegado o sin señal). Puede avisarnos por WhatsApp o llamar.', 'err');
+        prepareWhatsApp('🚨 ALERTA DE PÁNICO desde la página web. Necesito ayuda. (' + hora + ')');
+      }, {enableHighAccuracy:true, timeout:12000, maximumAge:0});
     });
     dialog.addEventListener('click', function(e){
       const r = dialog.getBoundingClientRect();
